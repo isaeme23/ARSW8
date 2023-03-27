@@ -10,7 +10,7 @@ var app = (function () {
     var stompClient = null;
 
     var addPointToCanvas = function (point) {        
-        var canvas = document.getElementById("canvas");
+        var canvas = document.getElementById("myCanvas");
         var ctx = canvas.getContext("2d");
         ctx.beginPath();
         ctx.arc(point.x, point.y, 3, 0, 2 * Math.PI);
@@ -19,7 +19,7 @@ var app = (function () {
     
     
     var getMousePosition = function (evt) {
-        canvas = document.getElementById("canvas");
+        canvas = document.getElementById("myCanvas");
         var rect = canvas.getBoundingClientRect();
         return {
             x: evt.clientX - rect.left,
@@ -38,7 +38,8 @@ var app = (function () {
             console.log('Connected: ' + frame);
             stompClient.subscribe('/topic/newpoint', function (eventbody) {
                 var theObject=JSON.parse(eventbody.body);
-                alert(JSON.stringify(theObject));
+                var p = new Point(theObject.x, theObject.y);
+                addPointToCanvas(p);
             });
         });
 
@@ -48,6 +49,27 @@ var app = (function () {
         stompClient.send("/topic/newpoint", {}, JSON.stringify(pt));
     }
 
+    var drawpoint = function(){
+        var canvas = document.getElementById("myCanvas");
+        var ctx = canvas.getContext("2d");
+          if(window.PointerEvent) {
+            canvas.addEventListener("pointerdown", function(event){
+              var point = new Point(event.pageX, event.pageY);
+              addPointToCanvas(point);
+              publishPoints(point);
+            }
+            );
+          }
+          else {
+            canvas.addEventListener("mousedown", function(event){
+                var point = new Point(event.pageX, event.pageY);
+                addPointToCanvas(point);
+                publishPoints(point);
+            }
+            );
+          }
+    }
+
     
     
 
@@ -55,17 +77,9 @@ var app = (function () {
 
         init: function () {
             var can = document.getElementById("canvas");
-            
+            drawpoint();
             //websocket connection
             connectAndSubscribe();
-        },
-
-        publishPoint: function(px,py){
-            var pt=new Point(px,py);
-            console.info("publishing point at "+pt);
-            addPointToCanvas(pt);
-            //publicar el evento
-            publishPoints(pt);
         },
 
         disconnect: function () {
