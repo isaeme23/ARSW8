@@ -19,7 +19,7 @@ var app = (function () {
         var canvas = document.getElementById("myCanvas");
         var ctx = canvas.getContext("2d");
         ctx.beginPath();
-        ctx.arc(point.x, point.y, 3, 0, 2 * Math.PI);
+        ctx.arc(point.x, point.y, 1, 0, 2 * Math.PI);
         ctx.stroke();
     };
     
@@ -47,13 +47,17 @@ var app = (function () {
             stompClient.subscribe(`/topic/newpoint.${number}`, function (eventbody) {
                 var theObject=JSON.parse(eventbody.body);
                 var p = new Point(theObject.x, theObject.y);
-                //addPointToCanvas(p);
+                addPointToCanvas(p);
+            });
+            stompClient.subscribe(`/topic/newpolygon.${number}`, function(eventbody){
+                var objectPolygon = JSON.parse(eventbody.body);
+                drawPolygon(objectPolygon);
             });
         });
     };
 
     var publishPoints = function(pt){
-        stompClient.send(`/topic/newpoint.${number}`, {}, JSON.stringify(pt));
+        stompClient.send(`/app/newpoint.${number}`, {}, JSON.stringify(pt));
     }
 
     var drawpoint = function(){
@@ -77,14 +81,24 @@ var app = (function () {
           }
     }
 
-
+    var drawPolygon = function(polygon){
+        var canvas = document.getElementById("myCanvas");
+        var ctx = canvas.getContext("2d");
+        ctx.fillStyle = '#f00';
+        ctx.beginPath();
+        ctx.moveTo(polygon[0].x, polygon[0].y);
+        for(let i = 1; i < polygon.length; i++) {
+            ctx.lineTo(polygon[i].x,polygon[i].y);
+        }
+        ctx.closePath();
+        ctx.fill();
+    }
 
     return {
 
         init: function () {
             var can = document.getElementById("canvas");
             drawpoint();
-            //connectAndSubscribe();
         },
 
         disconnect: function () {
