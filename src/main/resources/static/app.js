@@ -6,6 +6,12 @@ var app = (function () {
             this.y=y;
         }        
     }
+
+    var number;
+
+    function saveNumber(){
+         number = $("#number").val();
+    }
     
     var stompClient = null;
 
@@ -29,24 +35,25 @@ var app = (function () {
 
 
     var connectAndSubscribe = function () {
+        saveNumber();
+        console.log(number);
         console.info('Connecting to WS...');
         var socket = new SockJS('/stompendpoint');
         stompClient = Stomp.over(socket);
-        
         //subscribe to /topic/TOPICXX when connections succeed
         stompClient.connect({}, function (frame) {
             console.log('Connected: ' + frame);
-            stompClient.subscribe('/topic/newpoint', function (eventbody) {
+            saveNumber();
+            stompClient.subscribe('/topic/newpoint.'+ number, function (eventbody) {
                 var theObject=JSON.parse(eventbody.body);
                 var p = new Point(theObject.x, theObject.y);
-                addPointToCanvas(p);
+                //addPointToCanvas(p);
             });
         });
-
     };
 
     var publishPoints = function(pt){
-        stompClient.send("/topic/newpoint", {}, JSON.stringify(pt));
+        stompClient.send("/topic/newpoint."+ number, {}, JSON.stringify(pt));
     }
 
     var drawpoint = function(){
@@ -70,16 +77,14 @@ var app = (function () {
           }
     }
 
-    
-    
+
 
     return {
 
         init: function () {
             var can = document.getElementById("canvas");
             drawpoint();
-            //websocket connection
-            connectAndSubscribe();
+            //connectAndSubscribe();
         },
 
         disconnect: function () {
@@ -88,7 +93,9 @@ var app = (function () {
             }
             setConnected(false);
             console.log("Disconnected");
-        }
+        },
+
+        connectAndSubscribe:connectAndSubscribe
     };
 
 })();
