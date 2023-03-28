@@ -44,7 +44,7 @@ var app = (function () {
         stompClient.connect({}, function (frame) {
             console.log('Connected: ' + frame);
             saveNumber();
-            stompClient.subscribe('/topic/newpoint.'+ number, function (eventbody) {
+            stompClient.subscribe(`/topic/newpoint.${number}`, function (eventbody) {
                 var theObject=JSON.parse(eventbody.body);
                 var p = new Point(theObject.x, theObject.y);
                 //addPointToCanvas(p);
@@ -53,7 +53,7 @@ var app = (function () {
     };
 
     var publishPoints = function(pt){
-        stompClient.send("/topic/newpoint."+ number, {}, JSON.stringify(pt));
+        stompClient.send(`/topic/newpoint.${number}`, {}, JSON.stringify(pt));
     }
 
     var drawpoint = function(){
