@@ -84,7 +84,7 @@ var app = (function () {
     var drawPolygon = function(polygon){
         var canvas = document.getElementById("myCanvas");
         var ctx = canvas.getContext("2d");
-        ctx.fillStyle = '#f00';
+        ctx.fillStyle = '#37eb34';
         ctx.beginPath();
         ctx.moveTo(polygon[0].x, polygon[0].y);
         for(let i = 1; i < polygon.length; i++) {
